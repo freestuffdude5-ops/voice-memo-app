@@ -1,0 +1,167 @@
+{
+  "projectName": "HaydenVoiceMemo",
+  "description": "Personal voice memo and daily notes app with transcription, playback, and a stunning dynamic UI. Built for Hayden to capture thoughts via voice or text.",
+  "targetDirectory": "/home/user/clawd/projects/voice-memo-app",
+  "userStories": [
+    {
+      "id": "SETUP-001",
+      "title": "Initialize project structure",
+      "description": "Create the base HTML/CSS/JS structure with modern tooling",
+      "acceptanceCriteria": [
+        "Create index.html with proper HTML5 structure",
+        "Create styles.css with CSS variables for theming",
+        "Create app.js with module structure",
+        "Files load without console errors",
+        "Basic page renders in browser"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": "Keep it vanilla JS - no build step needed. Modern ES6+ modules."
+    },
+    {
+      "id": "UI-001",
+      "title": "Design stunning base UI layout",
+      "description": "Create a visually impressive, modern interface that wows",
+      "acceptanceCriteria": [
+        "Dark mode by default with rich color palette",
+        "Smooth animations and transitions",
+        "Glass-morphism or modern design elements",
+        "Responsive layout (works on mobile)",
+        "Custom fonts loaded (Inter or similar)",
+        "Sidebar for navigation, main content area for notes"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": "Make it look like a premium app. Surprise Hayden with the aesthetics."
+    },
+    {
+      "id": "DATA-001",
+      "title": "Implement IndexedDB storage layer",
+      "description": "Create robust local storage using IndexedDB",
+      "acceptanceCriteria": [
+        "Create database 'HaydenMemoApp' with version handling",
+        "Create 'notes' object store with auto-increment id",
+        "Create 'voiceMemos' object store for audio blobs",
+        "Implement CRUD functions: createNote, getNote, updateNote, deleteNote",
+        "Implement getAllNotes with date filtering",
+        "Data persists across page refreshes"
+      ],
+      "priority": 3,
+      "passes": true,
+      "notes": "IndexedDB handles large binary data (audio) well. Use async/await wrapper."
+    },
+    {
+      "id": "NOTES-001",
+      "title": "Build daily notes feature",
+      "description": "Text note creation with daily organization",
+      "acceptanceCriteria": [
+        "Rich text editor or nice textarea for writing",
+        "Auto-save as user types (debounced)",
+        "Notes organized by date",
+        "Show today's date prominently",
+        "Can view previous days' notes",
+        "Delete note functionality",
+        "Notes saved to IndexedDB"
+      ],
+      "priority": 4,
+      "passes": true,
+      "notes": "This is the core feature. Make writing feel good."
+    },
+    {
+      "id": "VOICE-001",
+      "title": "Implement voice recording",
+      "description": "Record audio using MediaRecorder API",
+      "acceptanceCriteria": [
+        "Record button with visual feedback (pulsing when active)",
+        "Request microphone permission gracefully",
+        "Show recording duration timer",
+        "Stop recording on button press",
+        "Save audio blob to IndexedDB",
+        "Handle errors gracefully (no mic, permission denied)"
+      ],
+      "priority": 5,
+      "passes": true,
+      "notes": "Use MediaRecorder API. Store as webm or mp3."
+    },
+    {
+      "id": "VOICE-002",
+      "title": "Implement voice playback",
+      "description": "Play back recorded voice memos",
+      "acceptanceCriteria": [
+        "List all voice memos for current day",
+        "Play button for each memo",
+        "Visual audio waveform or progress indicator",
+        "Pause/resume functionality",
+        "Show memo duration",
+        "Delete memo option"
+      ],
+      "priority": 6,
+      "passes": true,
+      "notes": "Use HTML5 Audio API. Make playback controls intuitive."
+    },
+    {
+      "id": "TRANSCRIBE-001",
+      "title": "Implement voice transcription",
+      "description": "Transcribe voice memos using Web Speech API",
+      "acceptanceCriteria": [
+        "Use SpeechRecognition API for real-time transcription",
+        "Show transcription as user speaks",
+        "Save transcription alongside audio",
+        "Display transcription below voice memo",
+        "Handle browsers without speech recognition support",
+        "Option to edit transcription manually"
+      ],
+      "priority": 7,
+      "passes": true,
+      "notes": "Web Speech API is free and built-in. Falls back gracefully."
+    },
+    {
+      "id": "UI-002",
+      "title": "Add micro-interactions and polish",
+      "description": "Add delightful animations and interactions",
+      "acceptanceCriteria": [
+        "Button hover effects",
+        "Smooth transitions between views",
+        "Loading states with skeletons or spinners",
+        "Success/error toast notifications",
+        "Keyboard shortcuts (Ctrl+N for new note, etc)",
+        "Sound effects for record start/stop (subtle)"
+      ],
+      "priority": 8,
+      "passes": true,
+      "notes": "The details make it feel premium."
+    },
+    {
+      "id": "UI-003",
+      "title": "Calendar/timeline view",
+      "description": "Navigate notes by date with visual calendar",
+      "acceptanceCriteria": [
+        "Mini calendar showing current month",
+        "Days with notes highlighted",
+        "Click date to view that day's notes",
+        "Today button to jump back",
+        "Smooth transitions between dates"
+      ],
+      "priority": 9,
+      "passes": true,
+      "notes": "Makes browsing past notes easy and visual."
+    },
+    {
+      "id": "FINAL-001",
+      "title": "Final testing and polish",
+      "description": "Test everything, fix bugs, optimize",
+      "acceptanceCriteria": [
+        "All features work without console errors",
+        "Tested voice recording and playback",
+        "Tested transcription",
+        "Tested data persistence (refresh browser)",
+        "UI looks great at different screen sizes",
+        "Performance is smooth (no jank)",
+        "Code is clean and commented"
+      ],
+      "priority": 10,
+      "passes": true,
+      "notes": "Ship quality. Make Hayden proud."
+    }
+  ]
+}

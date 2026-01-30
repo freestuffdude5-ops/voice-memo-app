@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoiceMemo</title>
+    
+    <!-- PWA -->
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="VoiceMemo">
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎙️</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%236366f1'/><text y='.9em' x='10' font-size='80'>🎙️</text></svg>">
+</head>
+<body>
+    <div id="app">
+        <!-- Mobile Overlay -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">🎙️</span>
+                    <span class="logo-text">VoiceMemo</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-view="today">
+                    <span class="nav-icon">📝</span>
+                    <span class="nav-label">Today</span>
+                </button>
+                <button class="nav-item" data-view="calendar">
+                    <span class="nav-icon">📅</span>
+                    <span class="nav-label">Calendar</span>
+                </button>
+                <button class="nav-item" data-view="recordings">
+                    <span class="nav-icon">🎤</span>
+                    <span class="nav-label">Recordings</span>
+                </button>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <span class="user-avatar">H</span>
+                    <span class="user-name">Hayden</span>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Open menu">☰</button>
+                <div class="date-display">
+                    <h1 id="current-date">Loading...</h1>
+                    <p id="current-time" class="time-display"></p>
+                </div>
+                <div class="header-actions">
+                    <button id="btn-new-note" class="btn btn-primary" title="Ctrl+N">
+                        <span>+ New Note</span>
+                    </button>
+                </div>
+            </header>
+            
+            <section class="content-area">
+                <!-- Today View -->
+                <div id="view-today" class="view active">
+                    <div class="notes-container">
+                        <div class="empty-state">
+                            <div class="empty-icon">✨</div>
+                            <h3>Start Your Day</h3>
+                            <p>Record a voice memo or write your first note</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Calendar View -->
+                <div id="view-calendar" class="view">
+                    <div class="calendar-wrapper">
+                        <div class="calendar-container">
+                            <div class="calendar-header">
+                                <button class="calendar-nav-btn" id="prev-month">‹</button>
+                                <h2 class="calendar-month-year" id="calendar-month-year">January 2026</h2>
+                                <button class="calendar-nav-btn" id="next-month">›</button>
+                            </div>
+                            <div class="calendar-weekdays">
+                                <span>Sun</span>
+                                <span>Mon</span>
+                                <span>Tue</span>
+                                <span>Wed</span>
+                                <span>Thu</span>
+                                <span>Fri</span>
+                                <span>Sat</span>
+                            </div>
+                            <div class="calendar-grid" id="calendar-grid">
+                                <!-- Days will be generated by JS -->
+                            </div>
+                            <div class="calendar-footer">
+                                <button class="btn btn-secondary" id="today-btn">Today</button>
+                            </div>
+                        </div>
+                        <div class="calendar-preview" id="calendar-preview">
+                            <h3 class="preview-date" id="preview-date">Select a date</h3>
+                            <div class="preview-content" id="preview-content">
+                                <p class="preview-empty">Click on a date to see notes</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recordings View -->
+                <div id="view-recordings" class="view">
+                    <div class="recordings-header">
+                        <h2>🎤 Voice Recordings</h2>
+                        <div class="recordings-search">
+                            <input type="text" id="recordings-search" placeholder="Search recordings..." />
+                        </div>
+                    </div>
+                    <div class="recordings-stats" id="recordings-stats">
+                        <!-- Stats populated by JS -->
+                    </div>
+                    <div class="recordings-list" id="recordings-list">
+                        <!-- Recordings populated by JS -->
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Voice Recording FAB -->
+            <button id="btn-record" class="fab fab-record" title="Record (Space)">
+                <span class="fab-icon">🎤</span>
+                <span class="fab-pulse"></span>
+            </button>
+        </main>
+    </div>
+    
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+    
+    <!-- Offline Banner -->
+    <div class="offline-banner" id="offline-banner">⚡ You're offline — changes won't sync until you reconnect</div>
+    
+    <!-- Keyboard Shortcuts Modal -->
+    <div class="shortcuts-overlay" id="shortcuts-overlay">
+        <div class="shortcuts-modal">
+            <h3>⌨️ Keyboard Shortcuts</h3>
+            <div class="shortcut-row">
+                <span class="shortcut-desc">New note</span>
+                <span class="shortcut-keys"><kbd class="kbd">Ctrl</kbd> + <kbd class="kbd">N</kbd></span>
+            </div>
+            <div class="shortcut-row">
+                <span class="shortcut-desc">Toggle recording</span>
+                <span class="shortcut-keys"><kbd class="kbd">Space</kbd></span>
+            </div>
+            <div class="shortcut-row">
+                <span class="shortcut-desc">Today view</span>
+                <span class="shortcut-keys"><kbd class="kbd">1</kbd></span>
+            </div>
+            <div class="shortcut-row">
+                <span class="shortcut-desc">Calendar view</span>
+                <span class="shortcut-keys"><kbd class="kbd">2</kbd></span>
+            </div>
+            <div class="shortcut-row">
+                <span class="shortcut-desc">Recordings view</span>
+                <span class="shortcut-keys"><kbd class="kbd">3</kbd></span>
+            </div>
+            <div class="shortcut-row">
+                <span class="shortcut-desc">Cancel recording</span>
+                <span class="shortcut-keys"><kbd class="kbd">Esc</kbd></span>
+            </div>
+            <div class="shortcut-row">
+                <span class="shortcut-desc">Show shortcuts</span>
+                <span class="shortcut-keys"><kbd class="kbd">?</kbd></span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="db.js"></script>
+    <script src="recorder.js"></script>
+    <script src="transcriber.js"></script>
+    <script src="ui.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
