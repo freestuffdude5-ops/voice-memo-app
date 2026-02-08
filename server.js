@@ -59,6 +59,22 @@ function saveDatabase() {
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
+// Request logging middleware
+app.use((req, res, next) => {
+    const start = Date.now();
+    const { method, path } = req;
+    
+    // Log after response is sent
+    res.on('finish', () => {
+        const duration = Date.now() - start;
+        const timestamp = new Date().toISOString();
+        const status = res.statusCode;
+        console.log(`[${timestamp}] ${method} ${path} -> ${status} (${duration}ms)`);
+    });
+    
+    next();
+});
+
 // Cache-busting: no-cache for JS/CSS/HTML so updates are immediate
 app.use(express.static(path.join(__dirname, 'public'), {
     setHeaders: (res, filePath) => {
