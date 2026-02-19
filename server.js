@@ -80,16 +80,26 @@ function queryAll(sql, params = []) {
     return results;
 }
 
+// Helper: Run a parameterized SELECT COUNT(*) and return the count
+function queryCount(sql, params = []) {
+    const rows = queryAll(sql, params);
+    return rows.length > 0 ? (rows[0]['COUNT(*)'] || 0) : 0;
+}
+
 // API Routes
 
-// Get all notes (with optional date filter)
+// Get all notes (with optional date, type filters and pagination)
 app.get('/api/notes', (req, res) => {
     try {
         const { date, type } = req.query;
-        let query = 'SELECT * FROM notes';
+
+        // Pagination params — default limit=200 for backwards compatibility
+        const limit = Math.min(Math.max(parseInt(req.query.limit) || 200, 1), 1000);
+        const offset = Math.max(parseInt(req.query.offset) || 0, 0);
+
         const conditions = [];
         const params = [];
-        
+
         if (date) {
             conditions.push('date(createdAt) = date(?)');
             params.push(date);
@@ -98,15 +108,27 @@ app.get('/api/notes', (req, res) => {
             conditions.push('type = ?');
             params.push(type);
         }
-        
-        if (conditions.length > 0) {
-            query += ' WHERE ' + conditions.join(' AND ');
-        }
-        
-        query += ' ORDER BY createdAt DESC';
-        
-        const notes = queryAll(query, params);
-        res.json(notes);
+
+        const whereClause = conditions.length > 0
+            ? ' WHERE ' + conditions.join(' AND ')
+            : '';
+
+        // Count total matching rows (before pagination)
+        const total = queryCount(`SELECT COUNT(*) FROM notes${whereClause}`, params);
+
+        // Fetch paginated rows
+        const notes = queryAll(
+            `SELECT * FROM notes${whereClause} ORDER BY createdAt DESC LIMIT ? OFFSET ?`,
+            [...params, limit, offset]
+        );
+
+        res.json({
+            notes,
+            total,
+            limit,
+            offset,
+            hasMore: offset + notes.length < total,
+        });
     } catch (error) {
         console.error('Error fetching notes:', error);
         res.status(500).json({ error: 'Failed to fetch notes' });
