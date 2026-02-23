@@ -250,11 +250,15 @@ function resultToObjects(result) {
 }
 
 // Start server
+let server;
 initDatabase().then(() => {
-    app.listen(PORT, () => {
+    server = app.listen(PORT, () => {
         console.log(`🎙️ Voice Memo Server running on port ${PORT}`);
     });
 }).catch(err => {
     console.error('Failed to initialize database:', err);
     process.exit(1);
 });
+
+// Export for testing
+module.exports = server;
