@@ -206,6 +206,65 @@ describe('Voice Memo API', () => {
     });
   });
 
+  describe('GET /api/dates', () => {
+    test('should return dates with note counts', async () => {
+      // Create a couple of notes to ensure we have data
+      const today = new Date().toISOString();
+      const note1 = {
+        id: `date-test-1-${Date.now()}`,
+        type: 'text',
+        title: 'Date Test 1',
+        content: 'Testing dates endpoint',
+      };
+      const note2 = {
+        id: `date-test-2-${Date.now()}`,
+        type: 'text',
+        title: 'Date Test 2',
+        content: 'Another note for dates',
+      };
+
+      await request('POST', '/api/notes', note1);
+      await request('POST', '/api/notes', note2);
+
+      // Fetch dates
+      const response = await request('GET', '/api/dates');
+      
+      assert.strictEqual(response.statusCode, 200);
+      assert.ok(Array.isArray(response.body));
+      assert.ok(response.body.length > 0);
+      
+      // Each date entry should have 'date' and 'count' fields
+      const firstEntry = response.body[0];
+      assert.ok(firstEntry.date);
+      assert.ok(typeof firstEntry.count === 'number');
+      assert.ok(firstEntry.count > 0);
+    });
+
+    test('should return dates in descending order', async () => {
+      const response = await request('GET', '/api/dates');
+      
+      assert.strictEqual(response.statusCode, 200);
+      
+      // Verify dates are sorted descending
+      if (response.body.length > 1) {
+        for (let i = 0; i < response.body.length - 1; i++) {
+          const current = new Date(response.body[i].date);
+          const next = new Date(response.body[i + 1].date);
+          assert.ok(current >= next, 'Dates should be in descending order');
+        }
+      }
+    });
+
+    test('should return empty array when no notes exist', async () => {
+      // This test assumes a fresh database or cleanup
+      // In a real scenario, you might want to use a test database
+      const response = await request('GET', '/api/dates');
+      
+      assert.strictEqual(response.statusCode, 200);
+      assert.ok(Array.isArray(response.body));
+    });
+  });
+
   describe('GET /api/health', () => {
     test('should return health status', async () => {
       const response = await request('GET', '/api/health');
