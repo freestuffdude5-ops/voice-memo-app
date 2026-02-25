@@ -250,12 +250,17 @@ function resultToObjects(result) {
     });
 }
 
-// Start server
-initDatabase().then(() => {
-    app.listen(PORT, () => {
-        console.log(`🎙️ Voice Memo Server running on port ${PORT}`);
+// Start server (only if run directly, not when imported for tests)
+if (require.main === module) {
+    initDatabase().then(() => {
+        app.listen(PORT, () => {
+            console.log(`🎙️ Voice Memo Server running on port ${PORT}`);
+        });
+    }).catch(err => {
+        console.error('Failed to initialize database:', err);
+        process.exit(1);
     });
-}).catch(err => {
-    console.error('Failed to initialize database:', err);
-    process.exit(1);
-});
+}
+
+// Export for testing
+module.exports = { app, initDatabase };
