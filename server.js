@@ -141,8 +141,7 @@ app.post('/api/notes', (req, res) => {
         
         saveDatabase();
         
-        const result = db.exec(`SELECT * FROM notes WHERE id = '${noteId}'`);
-        const notes = resultToObjects(result[0]);
+        const notes = queryAll('SELECT * FROM notes WHERE id = ?', [noteId]);
         res.status(201).json(notes[0]);
     } catch (error) {
         console.error('Error creating note:', error);
