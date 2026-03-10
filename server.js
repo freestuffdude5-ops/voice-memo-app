@@ -80,6 +80,114 @@ function queryAll(sql, params = []) {
     return results;
 }
 
+// Valid note types
+const VALID_NOTE_TYPES = ['text', 'voice'];
+const MAX_ID_LENGTH = 128;
+const MAX_TITLE_LENGTH = 500;
+const MAX_CONTENT_LENGTH = 100000; // ~100KB text
+const MAX_TRANSCRIPTION_LENGTH = 100000;
+
+// Helper: Validate and sanitize note input for creation
+function validateCreateNote(body) {
+    const errors = [];
+
+    if (!body || typeof body !== 'object') {
+        return { errors: ['Request body must be a JSON object'] };
+    }
+
+    // type is required
+    if (!body.type) {
+        errors.push('Field "type" is required');
+    } else if (!VALID_NOTE_TYPES.includes(body.type)) {
+        errors.push(`Field "type" must be one of: ${VALID_NOTE_TYPES.join(', ')}`);
+    }
+
+    // id is optional but must be a string if provided
+    if (body.id !== undefined && body.id !== null) {
+        if (typeof body.id !== 'string') {
+            errors.push('Field "id" must be a string');
+        } else if (body.id.length > MAX_ID_LENGTH) {
+            errors.push(`Field "id" must be at most ${MAX_ID_LENGTH} characters`);
+        }
+    }
+
+    // title is optional, must be string
+    if (body.title !== undefined && body.title !== null) {
+        if (typeof body.title !== 'string') {
+            errors.push('Field "title" must be a string');
+        } else if (body.title.length > MAX_TITLE_LENGTH) {
+            errors.push(`Field "title" must be at most ${MAX_TITLE_LENGTH} characters`);
+        }
+    }
+
+    // content is optional, must be string
+    if (body.content !== undefined && body.content !== null) {
+        if (typeof body.content !== 'string') {
+            errors.push('Field "content" must be a string');
+        } else if (body.content.length > MAX_CONTENT_LENGTH) {
+            errors.push(`Field "content" must be at most ${MAX_CONTENT_LENGTH} characters`);
+        }
+    }
+
+    // audioDuration is optional, must be a number
+    if (body.audioDuration !== undefined && body.audioDuration !== null) {
+        if (typeof body.audioDuration !== 'number' || isNaN(body.audioDuration)) {
+            errors.push('Field "audioDuration" must be a number');
+        } else if (body.audioDuration < 0) {
+            errors.push('Field "audioDuration" must be non-negative');
+        }
+    }
+
+    // transcription is optional, must be string
+    if (body.transcription !== undefined && body.transcription !== null) {
+        if (typeof body.transcription !== 'string') {
+            errors.push('Field "transcription" must be a string');
+        } else if (body.transcription.length > MAX_TRANSCRIPTION_LENGTH) {
+            errors.push(`Field "transcription" must be at most ${MAX_TRANSCRIPTION_LENGTH} characters`);
+        }
+    }
+
+    return { errors };
+}
+
+// Helper: Validate update input
+function validateUpdateNote(body) {
+    const errors = [];
+    const allowedFields = ['title', 'content', 'transcription'];
+
+    if (!body || typeof body !== 'object') {
+        return { errors: ['Request body must be a JSON object'] };
+    }
+
+    const hasUpdatableField = allowedFields.some(f => body[f] !== undefined);
+    if (!hasUpdatableField) {
+        errors.push(`At least one updatable field is required: ${allowedFields.join(', ')}`);
+    }
+
+    if (body.title !== undefined && body.title !== null && typeof body.title !== 'string') {
+        errors.push('Field "title" must be a string');
+    }
+    if (body.title && body.title.length > MAX_TITLE_LENGTH) {
+        errors.push(`Field "title" must be at most ${MAX_TITLE_LENGTH} characters`);
+    }
+
+    if (body.content !== undefined && body.content !== null && typeof body.content !== 'string') {
+        errors.push('Field "content" must be a string');
+    }
+    if (body.content && body.content.length > MAX_CONTENT_LENGTH) {
+        errors.push(`Field "content" must be at most ${MAX_CONTENT_LENGTH} characters`);
+    }
+
+    if (body.transcription !== undefined && body.transcription !== null && typeof body.transcription !== 'string') {
+        errors.push('Field "transcription" must be a string');
+    }
+    if (body.transcription && body.transcription.length > MAX_TRANSCRIPTION_LENGTH) {
+        errors.push(`Field "transcription" must be at most ${MAX_TRANSCRIPTION_LENGTH} characters`);
+    }
+
+    return { errors };
+}
+
 // API Routes
 
 // Get all notes (with optional date filter)
@@ -130,6 +238,11 @@ app.get('/api/notes/:id', (req, res) => {
 // Create note
 app.post('/api/notes', (req, res) => {
     try {
+        const { errors } = validateCreateNote(req.body);
+        if (errors.length > 0) {
+            return res.status(400).json({ error: 'Validation failed', details: errors });
+        }
+
         const { id, type, title, content, audioData, audioDuration, transcription } = req.body;
         const now = new Date().toISOString();
         const noteId = id || `${type}-${Date.now()}`;
@@ -153,6 +266,11 @@ app.post('/api/notes', (req, res) => {
 // Update note
 app.put('/api/notes/:id', (req, res) => {
     try {
+        const { errors } = validateUpdateNote(req.body);
+        if (errors.length > 0) {
+            return res.status(400).json({ error: 'Validation failed', details: errors });
+        }
+
         const { title, content, transcription } = req.body;
         const now = new Date().toISOString();
         
