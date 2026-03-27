@@ -82,10 +82,10 @@ function queryAll(sql, params = []) {
 
 // API Routes
 
-// Get all notes (with optional date filter)
+// Get all notes (with optional date, type, and full-text search filters)
 app.get('/api/notes', (req, res) => {
     try {
-        const { date, type } = req.query;
+        const { date, type, q } = req.query;
         let query = 'SELECT * FROM notes';
         const conditions = [];
         const params = [];
@@ -97,6 +97,12 @@ app.get('/api/notes', (req, res) => {
         if (type) {
             conditions.push('type = ?');
             params.push(type);
+        }
+        if (q && q.trim()) {
+            // Case-insensitive search across title, content, and transcription
+            const pattern = `%${q.trim()}%`;
+            conditions.push('(title LIKE ? OR content LIKE ? OR transcription LIKE ?)');
+            params.push(pattern, pattern, pattern);
         }
         
         if (conditions.length > 0) {
