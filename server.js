@@ -250,12 +250,74 @@ function resultToObjects(result) {
     });
 }
 
+// Graceful shutdown handler
+let server;
+let isShuttingDown = false;
+
+function shutdown(signal) {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
+
+    console.log(`\n🛑 Received ${signal}. Shutting down gracefully...`);
+
+    // Save database to disk
+    if (db) {
+        try {
+            saveDatabase();
+            console.log('💾 Database saved successfully.');
+        } catch (err) {
+            console.error('❌ Failed to save database during shutdown:', err);
+        }
+    }
+
+    // Close HTTP server (stop accepting new connections)
+    if (server) {
+        server.close(() => {
+            console.log('👋 Server closed. Goodbye!');
+            process.exit(0);
+        });
+
+        // Force exit if server doesn't close within 5 seconds
+        setTimeout(() => {
+            console.warn('⚠️ Forcing exit after timeout.');
+            process.exit(1);
+        }, 5000);
+    } else {
+        process.exit(0);
+    }
+}
+
+// Register signal handlers
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
+
+// Save database on uncaught exceptions before crashing
+process.on('uncaughtException', (err) => {
+    console.error('💥 Uncaught exception:', err);
+    if (db) {
+        try {
+            saveDatabase();
+            console.log('💾 Database saved after uncaught exception.');
+        } catch (saveErr) {
+            console.error('❌ Failed to save database after exception:', saveErr);
+        }
+    }
+    process.exit(1);
+});
+
+process.on('unhandledRejection', (reason) => {
+    console.error('💥 Unhandled rejection:', reason);
+});
+
 // Start server
 initDatabase().then(() => {
-    app.listen(PORT, () => {
+    server = app.listen(PORT, () => {
         console.log(`🎙️ Voice Memo Server running on port ${PORT}`);
     });
 }).catch(err => {
     console.error('Failed to initialize database:', err);
     process.exit(1);
 });
+
+// Export for testing
+module.exports = { app, shutdown };
